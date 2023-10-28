@@ -39,7 +39,7 @@ std::vector<std::unique_ptr<Card>> create_deck() {
 
     deck.reserve(100);
     for (int i = 0; i < 5; ++i) {
-        deck.push_back(std::make_unique<Card>(Card::START));
+        deck.push_back(std::make_unique<Card>(Card::START));//TODO each player gets one start card
         deck.push_back(std::make_unique<Card>(Card::FINISH));
     }
     for (unsigned int i = 0 + 1; i < Card::MAX_VALUE + 1; ++i) {
@@ -47,18 +47,6 @@ std::vector<std::unique_ptr<Card>> create_deck() {
     }
 
     return deck;
-
-};
-
-class Player {
-public:
-    Player(Player &) = delete;
-
-    std::vector<std::unique_ptr<Card>> draw;
-    std::vector<std::unique_ptr<Card>> discard;
-    std::vector<std::unique_ptr<Card>> hand;
-
-    virtual void make_turn();
 
 };
 
@@ -119,6 +107,36 @@ public:
 
 };
 
+class Player {
+public:
+    Player() = delete;
+
+    Player(std::vector<std::unique_ptr<Card>> draw_pile) {
+
+        draw = std::move(draw_pile);
+        draw_to_hand_size();
+    }
+
+    Player(Player &) = delete;
+
+    void draw_to_hand_size() {
+        while (hand.size() < 5 && draw.size() > 0) {
+            hand.push_back(std::move(draw.back()));
+            draw.pop_back();
+        }
+    }
+
+    std::vector<std::unique_ptr<Card>> draw;
+    std::vector<std::unique_ptr<Card>> discard;
+    std::vector<std::unique_ptr<Card>> hand;
+
+    //TODO  needs also a "Log" to know which other player has done what
+    // do we need to get a reference to the other players?
+    // e.g. to count the stack sizes?
+    virtual bool make_turn(PlayArea &area) = delete;
+
+};
+
 int main() {
     std::cout << "Hello, World!" << std::endl;
 
@@ -130,11 +148,11 @@ int main() {
 
     PlayArea area = PlayArea();
 
-    area.area[2][3]= std::move(deck.back());
+    area.area[2][3] = std::move(deck.back());
     deck.pop_back();
-    area.area[2][4]= std::move(deck.back());
+    area.area[2][4] = std::move(deck.back());
     deck.pop_back();
-    area.area[3][3]= std::move(deck.back());
+    area.area[3][3] = std::move(deck.back());
     deck.pop_back();
 
     area.print();
