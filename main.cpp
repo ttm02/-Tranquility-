@@ -1,11 +1,18 @@
 #include <iostream>
 
+#include <utility>
 #include <vector>
 #include <memory>
 
 #include <algorithm>
 #include <random>
 #include <iomanip>
+#include <cassert>
+
+//TODO implement special rules for less players
+#define MIN_PLAYER_COUNT 3
+#define MAX_PLAYER_COUNT 5
+
 
 class Card {
 public:
@@ -20,7 +27,7 @@ public:
     static const unsigned int FINISH = 101;
 
 
-    Card(unsigned int v) : value(v) {};
+    explicit Card(unsigned int v) : value(v) {};
 
     // not copy able
     Card(const Card &) = delete;
@@ -39,7 +46,7 @@ std::vector<std::unique_ptr<Card>> create_deck() {
 
     deck.reserve(100);
     for (int i = 0; i < 5; ++i) {
-        deck.push_back(std::make_unique<Card>(Card::START));//TODO each player gets one start card
+        //deck.push_back(std::make_unique<Card>(Card::START));// each player gets one start card
         deck.push_back(std::make_unique<Card>(Card::FINISH));
     }
     for (unsigned int i = 0 + 1; i < Card::MAX_VALUE + 1; ++i) {
@@ -49,6 +56,8 @@ std::vector<std::unique_ptr<Card>> create_deck() {
     return deck;
 
 };
+
+class GameManager;
 
 class PlayArea {
 public:
@@ -107,13 +116,18 @@ public:
 
 };
 
+class PlayerStrategy;
+
 class Player {
 public:
     Player() = delete;
 
-    Player(std::vector<std::unique_ptr<Card>> draw_pile) {
+    Player(unsigned int player_number, std::vector<std::unique_ptr<Card>> draw_pile,
+           std::unique_ptr<PlayerStrategy> strategy) :
+            player_number(player_number),
+            draw(std::move(draw_pile)),
+            strategy(std::move(strategy)) {
 
-        draw = std::move(draw_pile);
         draw_to_hand_size();
     }
 
@@ -130,32 +144,128 @@ public:
     std::vector<std::unique_ptr<Card>> discard;
     std::vector<std::unique_ptr<Card>> hand;
 
-    //TODO  needs also a "Log" to know which other player has done what
-    // do we need to get a reference to the other players?
-    // e.g. to count the stack sizes?
-    virtual bool make_turn(PlayArea &area) = delete;
+    const unsigned int player_number;
+    std::unique_ptr<PlayerStrategy> strategy;
 
 };
+
+struct Turn {
+    bool has_lost;
+    std::vector<unsigned int> cards_to_discard;
+    int card_to_play;
+    std::pair<int, int> position_played;
+
+};
+
+class PlayerStrategy {
+public:
+    explicit PlayerStrategy(unsigned int player_number) : player_number(player_number) {}
+
+    PlayerStrategy(PlayerStrategy &) = delete;
+
+    virtual void register_move(unsigned int player_number, Turn turn_made);
+
+    virtual Turn make_turn(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand);
+
+    const unsigned int player_number;
+};
+
+class GameManager {
+
+public:
+    GameManager() = delete;
+
+    GameManager(GameManager &) = delete;
+
+    PlayArea area;
+
+    size_t get_hand_size(unsigned int player_number) {
+        assert(player_number < players.size());
+        return players[player_number]->hand.size();
+    }
+
+    size_t get_deck_size(unsigned int player_number) {
+        assert(player_number < players.size());
+        return players[player_number]->draw.size();
+    }
+
+    size_t get_discard_size(unsigned int player_number) {
+        assert(player_number < players.size());
+        return players[player_number]->discard.size();
+    }
+
+    size_t get_num_players() {
+        return players.size();
+    }
+
+    static GameManager Create(std::vector<std::unique_ptr<PlayerStrategy>> strategies) {
+        auto num_players = strategies.size();
+        assert(MIN_PLAYER_COUNT <= num_players);
+        assert(num_players <= MAX_PLAYER_COUNT);
+
+        //TODO specify RNG to use as parameter?
+        auto rng = std::default_random_engine{};
+
+        auto deck = create_deck();
+
+        std::shuffle(std::begin(deck), std::end(deck), rng);
+
+        std::vector<std::unique_ptr<Player>> players;
+
+        unsigned int cards_per_player = deck.size() / num_players;
+        auto reminder = deck.size() % num_players;
+
+        for (int i = 0; i < num_players; ++i) {
+            unsigned int cards_this_player = cards_per_player;
+            if (reminder > 0) {
+                cards_this_player++;
+                reminder--;
+            }
+            std::vector<std::unique_ptr<Card>> this_players_deck;
+            this_players_deck.reserve(cards_this_player + 1);
+
+            this_players_deck.push_back(std::make_unique<Card>(Card::START));
+            for (int j = 0; j < cards_this_player; ++j) {
+                this_players_deck.push_back(std::move(deck.back()));
+                deck.pop_back();
+            }
+            std::shuffle(std::begin(this_players_deck), std::end(this_players_deck), rng);
+
+            assert(strategies[i]->player_number == i);
+            players.push_back(std::make_unique<Player>(i, std::move(this_players_deck), std::move(strategies[i])));
+        }
+        return GameManager(PlayArea(), std::move(players));
+    }
+
+private:
+    GameManager(PlayArea area, std::vector<std::unique_ptr<Player>> players) {
+        this->area = std::move(area);
+        this->players = std::move(players);
+    }
+
+    std::vector<std::unique_ptr<Player>> players;
+
+};
+
+class HumanPlayer : public PlayerStrategy {
+
+    explicit HumanPlayer(unsigned int player_number) : PlayerStrategy(player_number) {}
+
+    void register_move(unsigned int player_number, Turn turn_made) override {};
+
+    Turn make_turn(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand) override {
+
+        Turn turn_to_make;
+        //TODO implement
+        turn_to_make.has_lost = true;
+        return turn_to_make;
+    }
+};
+
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
 
-    auto rng = std::default_random_engine{};
-
-    auto deck = create_deck();
-
-    std::shuffle(std::begin(deck), std::end(deck), rng);
-
-    PlayArea area = PlayArea();
-
-    area.area[2][3] = std::move(deck.back());
-    deck.pop_back();
-    area.area[2][4] = std::move(deck.back());
-    deck.pop_back();
-    area.area[3][3] = std::move(deck.back());
-    deck.pop_back();
-
-    area.print();
 
     return 0;
 
