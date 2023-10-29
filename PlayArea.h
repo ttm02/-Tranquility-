@@ -22,6 +22,16 @@ public:
     // return -1 if move is invalid
     int get_num_discard(int pos, unsigned int new_card_value) const;
 
+    int get_num_gaps() const {
+        return std::accumulate(area.begin(), area.end(), 0, [](auto accu, const auto &card) {
+            if (card == nullptr) {
+                return accu + 1;
+            } else {
+                return accu + 0;
+            }
+        });
+    }
+
 private:
     bool has_start_ = false;
     bool has_finish_ = false;

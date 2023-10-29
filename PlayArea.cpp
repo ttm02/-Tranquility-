@@ -63,13 +63,7 @@ int PlayArea::get_num_discard(int pos, unsigned int new_card_value) const {
         }
     }
     if (new_card_value == Card::FINISH) {
-        auto num_gaps = std::accumulate(area.begin(), area.end(), 0, [](auto accu, const auto &card) {
-            if (card == nullptr) {
-                return accu + 1;
-            } else {
-                return accu + 0;
-            }
-        });
+        auto num_gaps = get_num_gaps();
         if (not has_finish_ && num_gaps == 0 && has_start_) {
             return 0;
         } else {
