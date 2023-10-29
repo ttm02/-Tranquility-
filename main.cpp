@@ -154,6 +154,7 @@ struct Turn {
     std::vector<unsigned int> cards_to_discard;
     int card_to_play = -1;
     std::pair<int, int> position_played = {-1, -1};
+    bool is_discard_phase = false;
 
 };
 
@@ -166,6 +167,10 @@ public:
     virtual void register_move(unsigned int player_number, Turn turn_made) = 0;
 
     virtual Turn make_turn(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand) = 0;
+
+    virtual int negotiate_discard_phase(const GameManager &GM, const std::vector<int> current_offer) = 0;
+
+    virtual Turn perform_discard(const GameManager &GM, const std::vector<int> negotiation_result) = 0;
 
     const unsigned int player_number;
 };
@@ -199,7 +204,7 @@ public:
     }
 
     template<class R>
-    static GameManager Create(std::vector<std::unique_ptr<PlayerStrategy>> strategies, R rng) {
+    static GameManager Create(std::vector<std::unique_ptr<PlayerStrategy>> strategies, R &rng) {
         auto num_players = strategies.size();
         assert(MIN_PLAYER_COUNT <= num_players);
         assert(num_players <= MAX_PLAYER_COUNT);
@@ -246,6 +251,7 @@ private:
 
 class HumanPlayer : public PlayerStrategy {
 
+public:
     explicit HumanPlayer(unsigned int player_number) : PlayerStrategy(player_number) {}
 
     void register_move(unsigned int player_number, Turn turn_made) override {};
@@ -265,6 +271,14 @@ int main() {
 
     //TODO specify RNG to use as parameter?
     auto rng = std::default_random_engine{};
+
+    std::vector<std::unique_ptr<PlayerStrategy>> strategies;
+
+    for (int i = 0; i < 3; ++i) {
+        strategies.push_back(std::make_unique<HumanPlayer>(i));
+    }
+
+    GameManager GM = GameManager::Create(std::move(strategies), rng);
 
 
 
