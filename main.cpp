@@ -204,7 +204,7 @@ public:
     }
 
     template<class R>
-    static GameManager Create(std::vector<std::unique_ptr<PlayerStrategy>> strategies, R &rng) {
+    static bool RunNewGame(std::vector<std::unique_ptr<PlayerStrategy>> strategies, R &rng) {
         auto num_players = strategies.size();
         assert(MIN_PLAYER_COUNT <= num_players);
         assert(num_players <= MAX_PLAYER_COUNT);
@@ -237,12 +237,18 @@ public:
             assert(strategies[i]->player_number == i);
             players.push_back(std::make_unique<Player>(i, std::move(this_players_deck), std::move(strategies[i])));
         }
-        return GameManager(std::move(players));
+        auto GM = GameManager(std::move(players));
+        return GM.run_game();
     }
 
 private:
     explicit GameManager(std::vector<std::unique_ptr<Player>> players) : players(std::move(players)) {
 
+    }
+
+    // return won
+    bool run_game() {
+        return false;
     }
 
     std::vector<std::unique_ptr<Player>> players;
@@ -263,11 +269,20 @@ public:
         turn_to_make.has_lost = true;
         return turn_to_make;
     }
+
+    int negotiate_discard_phase(const GameManager &GM, const std::vector<int> current_offer) override {
+        assert(false);
+        //TODO implement
+    }
+
+    Turn perform_discard(const GameManager &GM, const std::vector<int> negotiation_result) override {
+        assert(false);
+        //TODO implement
+    }
 };
 
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
 
     //TODO specify RNG to use as parameter?
     auto rng = std::default_random_engine{};
@@ -278,8 +293,10 @@ int main() {
         strategies.push_back(std::make_unique<HumanPlayer>(i));
     }
 
-    GameManager GM = GameManager::Create(std::move(strategies), rng);
+    bool game_won = GameManager::RunNewGame(std::move(strategies), rng);
 
+
+    std::cout << "Game Won? " << game_won << "\n";
 
 
     return 0;
