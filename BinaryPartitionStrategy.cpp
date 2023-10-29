@@ -38,6 +38,19 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
     }
     // END Check for lost, start, finish
 
+    // idea find the position that is "as much middle as possible"
+    // if possible: fill in gap if a card is safe to discard
+
+    // when no "middle" gap exists anymore: play cheapest card, discard 2 if it becomes too expansive
+
+
+
+    // print before each turn to see what is happening
+    GM.area.print();
+    std::cout << "Confirm Turn ";
+    std::cin.get();// wait for enter
+    std::cout << "\n";
+
     return turn;
 }
 
