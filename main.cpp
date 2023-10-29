@@ -279,6 +279,19 @@ struct Turn {
 
     bool is_valid(const PlayArea &area, const std::vector<std::unique_ptr<Card>> &hand) {
 
+        if (is_discard_phase) {
+            if (hasDuplicates(cards_to_discard)) {
+                return false;
+            }
+            for (auto c: cards_to_discard) {
+                if (c >= hand.size()) { return false; }
+            }
+            // the Game Manager should check if the Agent honors the negotiation Result
+            return true;
+        }
+
+        assert(not is_discard_phase);
+
         if (hand.empty()) {
             return has_lost;// must loose
         }
