@@ -14,4 +14,6 @@ add_executable(tranquility main.cpp
         Player.h
         PlayerAgent.h
         HumanPlayer.cpp
-        HumanPlayer.h)
+        HumanPlayer.h
+        BinaryPartitionStrategy.cpp
+        BinaryPartitionStrategy.h)

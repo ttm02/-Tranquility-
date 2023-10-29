@@ -12,6 +12,7 @@
 
 #include "GameManager.h"
 #include "HumanPlayer.h"
+#include "BinaryPartitionStrategy.h"
 
 
 
@@ -22,8 +23,8 @@ int main() {
 
     std::vector<std::unique_ptr<PlayerAgent>> strategies;
 
-    for (int i = 0; i < 3; ++i) {
-        strategies.push_back(std::make_unique<HumanPlayer>(i));
+    for (int i = 0; i < 2; ++i) {
+        strategies.push_back(std::make_unique<BinaryPartitionStrategy>(i));
     }
 
     bool game_won = GameManager::RunNewGame(std::move(strategies), rng);
