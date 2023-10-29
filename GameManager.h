@@ -69,7 +69,7 @@ struct Turn {
     bool has_lost = true;
     std::vector<unsigned int> cards_to_discard;
     int card_to_play = -1;
-    std::pair<int, int> position_played = {-1, -1};
+    int position_played = -1;
     bool is_discard_phase = false;
 
     bool is_valid(const PlayArea &area, const std::vector<std::unique_ptr<Card>> &hand);

@@ -12,6 +12,7 @@
 
 const unsigned int PlayArea::WIDTH;
 const unsigned int PlayArea::HEIGHT;
+const unsigned int  PlayArea::LENGTH;
 
 void PlayArea::print() const {
     // first row
@@ -28,8 +29,8 @@ void PlayArea::print() const {
     for (int i = 0; i < HEIGHT; ++i) {
         std::cout << std::setw(2) << i;
         for (int j = 0; j < WIDTH; ++j) {
-            if (area[i][j]) {
-                std::cout << "\t" << std::setw(2) << area[i][j]->value;
+            if (area[i * WIDTH + j]) {
+                std::cout << "\t" << std::setw(2) << area[i * WIDTH + j]->value;
             } else {
                 std::cout << "\t" << "  ";
             }
@@ -51,7 +52,7 @@ void PlayArea::print() const {
     std::cout << "\n";
 }
 
-int PlayArea::get_num_discard(std::pair<int, int> pos, unsigned int new_card_value) const {
+int PlayArea::get_num_discard(int pos, unsigned int new_card_value) const {
     if (new_card_value == Card::START) {
         // check if valid
         if (not has_start_) {
@@ -62,14 +63,12 @@ int PlayArea::get_num_discard(std::pair<int, int> pos, unsigned int new_card_val
         }
     }
     if (new_card_value == Card::FINISH) {
-        auto num_gaps = std::accumulate(area.begin(), area.end(), 0, [](auto accu, const auto &row) {
-            return accu + std::accumulate(row.begin(), row.end(), 0, [](auto accu, const auto &card) {
-                if (card == nullptr) {
-                    return accu + 1;
-                } else {
-                    return accu + 0;
-                }
-            });
+        auto num_gaps = std::accumulate(area.begin(), area.end(), 0, [](auto accu, const auto &card) {
+            if (card == nullptr) {
+                return accu + 1;
+            } else {
+                return accu + 0;
+            }
         });
         if (not has_finish_ && num_gaps == 0 && has_start_) {
             return 0;
@@ -79,47 +78,34 @@ int PlayArea::get_num_discard(std::pair<int, int> pos, unsigned int new_card_val
     }
 
     // position is in Boundaries and free
-    if (pos.first >= 0 && pos.first < HEIGHT && pos.second >= 0 && pos.second < WIDTH &&
-        area[pos.first][pos.second] == nullptr) {
+    if (pos > 0 && pos < LENGTH &&
+        area[pos] == nullptr) {
 
-        std::pair<int, int> left_neighbor = pos;
-        if (pos != std::make_pair(0, 0)) {
-            if (pos.second == 0) {
-                left_neighbor = std::make_pair(pos.first - 1, WIDTH);
-            } else {
-                left_neighbor = std::make_pair(pos.first, pos.second - 1);
-            }
-        }
-        std::pair<int, int> right_neighbor = pos;
-        if (pos != std::make_pair(5, 5)) {
-            if (pos.second == WIDTH - 1) {
-                left_neighbor = std::make_pair(pos.first + 1, 0);
-            } else {
-                left_neighbor = std::make_pair(pos.first, pos.second + 1);
-            }
-        }
-        if (area[right_neighbor.first][right_neighbor.second] == nullptr &&
-            area[left_neighbor.first][left_neighbor.second] == nullptr) {
+        int left_neighbor = pos == 0 ? pos : pos + 1;
+        int right_neighbor = pos == LENGTH - 1 ? pos : pos - 1;
+
+        if (area[right_neighbor] == nullptr &&
+            area[left_neighbor] == nullptr) {
             // no neighbor
             return 0;
         } else {
             unsigned int num_discard = std::numeric_limits<int>::max();
 
-            if (area[right_neighbor.first][right_neighbor.second] != nullptr) {
-                if (area[right_neighbor.first][right_neighbor.second]->value < new_card_value) {
+            if (area[right_neighbor] != nullptr) {
+                if (area[right_neighbor]->value < new_card_value) {
                     return -1;
                 }
                 num_discard = std::min(num_discard,
-                                       area[right_neighbor.first][right_neighbor.second]->value - new_card_value);
+                                       area[right_neighbor]->value - new_card_value);
             }
-            if (area[left_neighbor.first][left_neighbor.second] != nullptr) {
-                if (new_card_value < area[left_neighbor.first][left_neighbor.second]->value) {
+            if (area[left_neighbor] != nullptr) {
+                if (new_card_value < area[left_neighbor]->value) {
                     return -1;
                 }
                 num_discard = std::min(new_card_value - num_discard,
-                                       area[left_neighbor.first][left_neighbor.second]->value);
+                                       area[left_neighbor]->value);
             }
-            assert(num_discard <= std::numeric_limits<int>::max());
+            assert(num_discard < std::numeric_limits<int>::max());
             return static_cast<int>(num_discard);
         }
 
@@ -128,7 +114,7 @@ int PlayArea::get_num_discard(std::pair<int, int> pos, unsigned int new_card_val
     }
 }
 
-void PlayArea::play_card(std::pair<int, int> pos, std::unique_ptr<Card> card) {
+void PlayArea::play_card(int pos, std::unique_ptr<Card> card) {
 
     assert(card != nullptr);
     assert(get_num_discard(pos, card->value) != -1);
@@ -141,6 +127,5 @@ void PlayArea::play_card(std::pair<int, int> pos, std::unique_ptr<Card> card) {
         has_finish_ = true;
         return;
     }
-    area[pos.first][pos.second] = std::move(card);
-    return;
+    area[pos] = std::move(card);
 }

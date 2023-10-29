@@ -117,14 +117,11 @@ bool Turn::is_valid(const PlayArea &area, const std::vector<std::unique_ptr<Card
             return false;
         } else {
             // check if there is a large enough gap to play just one card
-            for (int i = 0; i < PlayArea::WIDTH; ++i) {
-                for (int j = 0; j < PlayArea::HEIGHT; ++j) {
-                    if (area.get_num_discard(std::make_pair(i, j), hand[0]->value) == 0) {
-                        // could play at this position
-                        return false;
-                    }
+            for (int i = 0; i < PlayArea::LENGTH; ++i) {
+                if (area.get_num_discard(i, hand[0]->value) == 0) {
+                    // could play at this position
+                    return false;
                 }
-
             }
         }
     }
