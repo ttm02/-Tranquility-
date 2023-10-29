@@ -11,7 +11,7 @@
 #include <limits>
 
 //TODO implement special rules for less players
-#define MIN_PLAYER_COUNT 3
+#define MIN_PLAYER_COUNT 2
 #define MAX_PLAYER_COUNT 5
 
 #define NUM_DISCARD_DISCARD_PHASE 8
@@ -497,6 +497,15 @@ private:
                     return true; // won
                 }
                 if (enter_discard_phase) {
+                    if (players.size() == 2) {
+                        // both players draw 2 cards before discard phase
+                        for (int i = 0; i < 2; ++i) {
+                            players[0]->hand.push_back(std::move(players[0]->draw.back()));
+                            players[0]->draw.pop_back();
+                            players[1]->hand.push_back(std::move(players[1]->draw.back()));
+                            players[1]->draw.pop_back();
+                        }
+                    }
                     // negotiation phase
                 }
             }
