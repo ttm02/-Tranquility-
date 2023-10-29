@@ -134,7 +134,7 @@ public:
     Player(Player &) = delete;
 
     void draw_to_hand_size() {
-        while (hand.size() < 5 && draw.size() > 0) {
+        while (hand.size() < 5 && !draw.empty()) {
             hand.push_back(std::move(draw.back()));
             draw.pop_back();
         }
@@ -150,10 +150,10 @@ public:
 };
 
 struct Turn {
-    bool has_lost;
+    bool has_lost = true;
     std::vector<unsigned int> cards_to_discard;
-    int card_to_play;
-    std::pair<int, int> position_played;
+    int card_to_play = -1;
+    std::pair<int, int> position_played = {-1, -1};
 
 };
 
@@ -163,9 +163,9 @@ public:
 
     PlayerStrategy(PlayerStrategy &) = delete;
 
-    virtual void register_move(unsigned int player_number, Turn turn_made);
+    virtual void register_move(unsigned int player_number, Turn turn_made) = 0;
 
-    virtual Turn make_turn(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand);
+    virtual Turn make_turn(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand) = 0;
 
     const unsigned int player_number;
 };
@@ -177,7 +177,7 @@ public:
 
     GameManager(GameManager &) = delete;
 
-    PlayArea area;
+    PlayArea area = PlayArea();
 
     size_t get_hand_size(unsigned int player_number) {
         assert(player_number < players.size());
@@ -198,13 +198,11 @@ public:
         return players.size();
     }
 
-    static GameManager Create(std::vector<std::unique_ptr<PlayerStrategy>> strategies) {
+    template<class R>
+    static GameManager Create(std::vector<std::unique_ptr<PlayerStrategy>> strategies, R rng) {
         auto num_players = strategies.size();
         assert(MIN_PLAYER_COUNT <= num_players);
         assert(num_players <= MAX_PLAYER_COUNT);
-
-        //TODO specify RNG to use as parameter?
-        auto rng = std::default_random_engine{};
 
         auto deck = create_deck();
 
@@ -234,13 +232,12 @@ public:
             assert(strategies[i]->player_number == i);
             players.push_back(std::make_unique<Player>(i, std::move(this_players_deck), std::move(strategies[i])));
         }
-        return GameManager(PlayArea(), std::move(players));
+        return GameManager(std::move(players));
     }
 
 private:
-    GameManager(PlayArea area, std::vector<std::unique_ptr<Player>> players) {
-        this->area = std::move(area);
-        this->players = std::move(players);
+    explicit GameManager(std::vector<std::unique_ptr<Player>> players) : players(std::move(players)) {
+
     }
 
     std::vector<std::unique_ptr<Player>> players;
@@ -265,6 +262,10 @@ class HumanPlayer : public PlayerStrategy {
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
+
+    //TODO specify RNG to use as parameter?
+    auto rng = std::default_random_engine{};
+
 
 
     return 0;
