@@ -8,11 +8,11 @@
 #include <random>
 #include <iomanip>
 #include <cassert>
+#include <limits>
 
 //TODO implement special rules for less players
 #define MIN_PLAYER_COUNT 3
 #define MAX_PLAYER_COUNT 5
-
 
 class Card {
 public:
@@ -70,11 +70,111 @@ public:
 
     PlayArea(PlayArea &) = delete;
 
+private:
     std::vector<std::vector<std::unique_ptr<Card>>> area;
+public:
+    const std::vector<std::vector<std::unique_ptr<Card>>> &get_area() const { return area; };
 
+    void play_card(std::pair<int, int> pos, std::unique_ptr<Card> card) {
+
+        assert(card != nullptr);
+        assert(get_num_discard(pos, card->value) != -1);
+
+        if (card->value == Card::START) {
+            has_start = true;
+            return;
+        }
+        if (card->value == Card::FINISH) {
+            has_finish = true;
+            return;
+        }
+        area[pos.first][pos.second] = std::move(card);
+        return;
+    }
+
+    // return -1 if move is invalid
+    int get_num_discard(std::pair<int, int> pos, unsigned int new_card_value) const {
+        if (new_card_value == Card::START) {
+            // check if valid
+            if (not has_start) {
+                return 0;
+            }
+            {
+                return -1;
+            }
+        }
+        if (new_card_value == Card::FINISH) {
+            auto num_gaps = std::accumulate(area.begin(), area.end(), 0, [](auto accu, const auto &row) {
+                return accu + std::accumulate(row.begin(), row.end(), 0, [](auto accu, const auto &card) {
+                    if (card == nullptr) {
+                        return accu + 1;
+                    } else {
+                        return accu + 0;
+                    }
+                });
+            });
+            if (not has_finish && num_gaps == 0) {
+                return 0;
+            } else {
+                return -1;
+            }
+        }
+
+        // position is in Boundaries and free
+        if (pos.first >= 0 && pos.first < HEIGHT && pos.second >= 0 && pos.second < WIDTH &&
+            area[pos.first][pos.second] == nullptr) {
+
+            std::pair<int, int> left_neighbor = pos;
+            if (pos != std::make_pair(0, 0)) {
+                if (pos.second == 0) {
+                    left_neighbor = std::make_pair(pos.first - 1, WIDTH);
+                } else {
+                    left_neighbor = std::make_pair(pos.first, pos.second - 1);
+                }
+            }
+            std::pair<int, int> right_neighbor = pos;
+            if (pos != std::make_pair(5, 5)) {
+                if (pos.second == WIDTH - 1) {
+                    left_neighbor = std::make_pair(pos.first + 1, 0);
+                } else {
+                    left_neighbor = std::make_pair(pos.first, pos.second + 1);
+                }
+            }
+            if (area[right_neighbor.first][right_neighbor.second] == nullptr &&
+                area[left_neighbor.first][left_neighbor.second] == nullptr) {
+                // no neighbor
+                return 0;
+            } else {
+                unsigned int num_discard = std::numeric_limits<int>::max();
+
+                if (area[right_neighbor.first][right_neighbor.second] != nullptr) {
+                    if (area[right_neighbor.first][right_neighbor.second]->value < new_card_value) {
+                        return -1;
+                    }
+                    num_discard = std::min(num_discard,
+                                           area[right_neighbor.first][right_neighbor.second]->value - new_card_value);
+                }
+                if (area[left_neighbor.first][left_neighbor.second] != nullptr) {
+                    if (new_card_value < area[left_neighbor.first][left_neighbor.second]->value) {
+                        return -1;
+                    }
+                    num_discard = std::min(new_card_value - num_discard,
+                                           area[left_neighbor.first][left_neighbor.second]->value);
+                }
+                assert(num_discard <= std::numeric_limits<int>::max());
+                return static_cast<int>(num_discard);
+            }
+
+        } else {
+            return -1; // invalid
+        }
+    }
 
     bool has_start = false;
     bool has_finish = false;
+
+    static const unsigned int WIDTH = 6;
+    static const unsigned int HEIGHT = 6;
 
     void print() const {
         // first row
@@ -83,14 +183,14 @@ public:
         } else {
             std::cout << "  ";
         }
-        for (int i = 0; i < 6; ++i) {
+        for (int i = 0; i < WIDTH; ++i) {
             std::cout << "\t" << std::setw(2) << i;
         }
         std::cout << "\n";
 
-        for (int i = 0; i < 6; ++i) {
+        for (int i = 0; i < HEIGHT; ++i) {
             std::cout << std::setw(2) << i;
-            for (int j = 0; j < 6; ++j) {
+            for (int j = 0; j < WIDTH; ++j) {
                 if (area[i][j]) {
                     std::cout << "\t" << std::setw(2) << area[i][j]->value;
                 } else {
@@ -103,7 +203,7 @@ public:
         }
 
         std::cout << "  ";
-        for (int i = 0; i < 6; ++i) {
+        for (int i = 0; i < WIDTH; ++i) {
             std::cout << "\t" << std::setw(2) << i;
         }
         if (has_finish) {
@@ -155,6 +255,17 @@ struct Turn {
     int card_to_play = -1;
     std::pair<int, int> position_played = {-1, -1};
     bool is_discard_phase = false;
+
+    bool is_valid(const PlayArea &area, const std::vector<std::unique_ptr<Card>> &hand) {
+        bool valid = true;
+        if (has_lost) {
+            // check if there was a possible turn
+
+        }
+        if (hand.empty()) {
+            return has_lost;// must loose
+        }
+    }
 
 };
 
