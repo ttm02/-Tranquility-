@@ -22,9 +22,11 @@ public:
 
     virtual Turn make_turn(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand) = 0;
 
-    virtual int negotiate_discard_phase(const GameManager &GM, const std::vector<int> current_offer) = 0;
+    virtual int negotiate_discard_phase(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand,
+                                        const std::vector<int> current_offer) = 0;
 
-    virtual Turn perform_discard(const GameManager &GM, const std::vector<int> negotiation_result) = 0;
+    virtual Turn perform_discard(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand,
+                                 const std::vector<int> negotiation_result) = 0;
 
     const unsigned int player_number;
 };

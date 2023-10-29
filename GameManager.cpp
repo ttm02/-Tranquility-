@@ -13,7 +13,7 @@ std::vector<int> GameManager::run_discard_phase_negotiation() {
     // operator + is default for accumulate
     while (std::accumulate(current_offer.begin(), current_offer.end(), 0) != NUM_DISCARD_DISCARD_PHASE) {
         for (auto &p: players) {
-            new_offer[p->player_number] = p->strategy->negotiate_discard_phase(*this, current_offer);
+            new_offer[p->player_number] = p->strategy->negotiate_discard_phase(*this, p->hand, current_offer);
         }
         current_offer = new_offer;
     }
@@ -23,7 +23,7 @@ std::vector<int> GameManager::run_discard_phase_negotiation() {
 void GameManager::run_discard_phase_execution(const std::vector<int> &negotiation_result) {
 
     for (auto &p: players) {
-        Turn discard_turn = p->strategy->perform_discard(*this, negotiation_result);
+        Turn discard_turn = p->strategy->perform_discard(*this, p->hand, negotiation_result);
         assert(discard_turn.is_valid(area, p->hand));
         assert(discard_turn.cards_to_discard.size() == negotiation_result[p->player_number]);
         // perform the discard
