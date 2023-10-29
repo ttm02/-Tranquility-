@@ -146,11 +146,7 @@ bool Turn::is_valid(const PlayArea &area, const std::vector<std::unique_ptr<Card
     assert(hand[card_to_play] != nullptr);
 
     // if at least one start card in hand and not played so far
-    if (area.has_start() && std::accumulate(hand.begin(), hand.end(), 0, [](auto accu, const auto &c) {
-        if (c->value == Card::START) {
-            return accu + 1;
-        } else { return accu; }
-    }) > 0) {
+    if (area.has_start() && num_start_in_hand(hand) > 0) {
         return (hand[card_to_play]->value == Card::START &&
                 cards_to_discard.empty());
     }

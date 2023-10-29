@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <cassert>
+#include <numeric>
 
 #include "PlayArea.h"
 #include "PlayerAgent.h"
@@ -112,6 +113,14 @@ bool GameManager::RunNewGame(std::vector<std::unique_ptr<PlayerAgent>> strategie
     }
     auto GM = GameManager(std::move(players));
     return GM.run_game();
+}
+
+inline int num_start_in_hand(const std::vector<std::unique_ptr<Card>> &hand) {
+    return std::accumulate(hand.begin(), hand.end(), 0, [](auto accu, const auto &c) {
+        if (c->value == Card::START) {
+            return accu + 1;
+        } else { return accu; }
+    });
 }
 
 
