@@ -5,15 +5,15 @@
 #ifndef TRANQUILITY_HUMANPLAYER_H
 #define TRANQUILITY_HUMANPLAYER_H
 
-#include "PlayerStrategy.h"
+#include "PlayerAgent.h"
 #include "GameManager.h"
 
 #include <cassert>
 
-class HumanPlayer : public PlayerStrategy {
+class HumanPlayer : public PlayerAgent {
 
 public:
-    explicit HumanPlayer(unsigned int player_number) : PlayerStrategy(player_number) {}
+    explicit HumanPlayer(unsigned int player_number) : PlayerAgent(player_number) {}
 
     void register_move(unsigned int player_number, Turn turn_made) override {};
 

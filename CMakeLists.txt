@@ -12,6 +12,6 @@ add_executable(tranquility main.cpp
         Card.cpp
         Player.cpp
         Player.h
-        PlayerStrategy.h
+        PlayerAgent.h
         HumanPlayer.cpp
         HumanPlayer.h)

@@ -7,7 +7,7 @@
 #include <cassert>
 
 #include "PlayArea.h"
-#include "PlayerStrategy.h"
+#include "PlayerAgent.h"
 #include "Player.h"
 
 //TODO implement solo rules?
@@ -47,7 +47,7 @@ public:
     }
 
     template<class R>
-    static bool RunNewGame(std::vector<std::unique_ptr<PlayerStrategy>> strategies, R &rng);
+    static bool RunNewGame(std::vector<std::unique_ptr<PlayerAgent>> strategies, R &rng);
 
 private:
     explicit GameManager(std::vector<std::unique_ptr<Player>> players) : players(std::move(players)) {
@@ -77,7 +77,7 @@ struct Turn {
 };
 
 template<class R>
-bool GameManager::RunNewGame(std::vector<std::unique_ptr<PlayerStrategy>> strategies, R &rng) {
+bool GameManager::RunNewGame(std::vector<std::unique_ptr<PlayerAgent>> strategies, R &rng) {
     auto num_players = strategies.size();
     assert(MIN_PLAYER_COUNT <= num_players);
     assert(num_players <= MAX_PLAYER_COUNT);

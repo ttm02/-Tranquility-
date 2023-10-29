@@ -5,9 +5,9 @@
 #ifndef TRANQUILITY_PLAYER_H
 #define TRANQUILITY_PLAYER_H
 
-class PlayerStrategy;
+class PlayerAgent;
 
-#include "PlayerStrategy.h"
+#include "PlayerAgent.h"
 
 #include <algorithm>
 #include <memory>
@@ -17,7 +17,7 @@ public:
     Player() = delete;
 
     Player(unsigned int player_number, std::vector<std::unique_ptr<Card>> draw_pile,
-           std::unique_ptr<PlayerStrategy> strategy) :
+           std::unique_ptr<PlayerAgent> strategy) :
             player_number(player_number),
             draw(std::move(draw_pile)),
             strategy(std::move(strategy)) {
@@ -39,7 +39,7 @@ public:
     std::vector<std::unique_ptr<Card>> hand;
 
     const unsigned int player_number;
-    std::unique_ptr<PlayerStrategy> strategy;
+    std::unique_ptr<PlayerAgent> strategy;
 
 };
 

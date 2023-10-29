@@ -1,5 +1,5 @@
-#ifndef TRANQUILITY_PLAYERSTRATEGY_H
-#define TRANQUILITY_PLAYERSTRATEGY_H
+#ifndef TRANQUILITY_PLAYERAGENT_H
+#define TRANQUILITY_PLAYERAGENT_H
 
 #include <vector>
 #include <memory>
@@ -12,11 +12,11 @@ class GameManager;
 struct Turn;
 
 
-class PlayerStrategy {
+class PlayerAgent {
 public:
-    explicit PlayerStrategy(unsigned int player_number) : player_number(player_number) {}
+    explicit PlayerAgent(unsigned int player_number) : player_number(player_number) {}
 
-    PlayerStrategy(PlayerStrategy &) = delete;
+    PlayerAgent(PlayerAgent &) = delete;
 
     virtual void register_move(unsigned int player_number, Turn turn_made) = 0;
 
@@ -31,4 +31,4 @@ public:
 
 #include "GameManager.h"
 
-#endif //TRANQUILITY_PLAYERSTRATEGY_H
+#endif //TRANQUILITY_PLAYERAGENT_H
