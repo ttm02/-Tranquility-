@@ -76,23 +76,28 @@ Turn HumanPlayer::perform_discard(
     Turn turn;
     turn.has_lost = false;
     turn.is_discard_phase = true;
+    turn.cards_to_discard.push_back(-1);// invalidate to enter first loop iteration
 
 
-    std::vector<int> cards_to_exclude_showing = {};
-    turn.cards_to_discard = {};
-    cards_to_exclude_showing.push_back(turn.card_to_play);
-    for (int i = 0; i < num_cards_to_discard; ++i) {
-        print_hand(hand, cards_to_exclude_showing);
-        std::cout << "Which cards to discard? (" << num_cards_to_discard - i << " remaining): ";
-        int to_discard;
-        std::cin >> to_discard;
-        turn.cards_to_discard.push_back(to_discard);
-        std::cout << "\n";
-    }
-    if (not turn.is_valid(GM.area, hand)) {
-        std::cout << "Invalid selection\n";
+    while (not turn.is_valid(GM.area, hand)) {
+        std::vector<int> cards_to_exclude_showing = {};
+        turn.cards_to_discard = {};
+        cards_to_exclude_showing.push_back(turn.card_to_play);
+        for (int i = 0; i < num_cards_to_discard; ++i) {
+            print_hand(hand, cards_to_exclude_showing);
+            std::cout << "Which cards to discard? (" << num_cards_to_discard - i << " remaining): ";
+            int to_discard;
+            std::cin >> to_discard;
+            turn.cards_to_discard.push_back(to_discard);
+            cards_to_exclude_showing.push_back(to_discard);
+            std::cout << "\n";
+        }
+        if (not turn.is_valid(GM.area, hand)) {
+            std::cout << "Invalid selection\n";
+        }
     }
     return turn;
+
 }
 
 Turn HumanPlayer::make_turn(const GameManager &GM,
@@ -167,6 +172,7 @@ Turn HumanPlayer::make_turn(const GameManager &GM,
             int to_discard;
             std::cin >> to_discard;
             turn.cards_to_discard.push_back(to_discard);
+            cards_to_exclude_showing.push_back(to_discard);
             std::cout << "\n";
         }
         if (not turn.is_valid(GM.area, hand)) {
