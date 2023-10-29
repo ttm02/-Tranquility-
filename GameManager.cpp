@@ -154,7 +154,11 @@ bool Turn::is_valid(const PlayArea &area, const std::vector<std::unique_ptr<Card
         return (hand[card_to_play]->value == Card::START &&
                 cards_to_discard.empty());
     }
+    if (hand[card_to_play]->value == Card::START && area.has_start()) { return false; }
 
+    // test for Finish is implemented in get_num_discard
+
+    // discarded correct amount of cards
     int num_discard = area.get_num_discard(position_played, hand[card_to_play]->value);
     if (num_discard == -1) {
         return false;
