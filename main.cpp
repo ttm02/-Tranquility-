@@ -177,6 +177,7 @@ public:
     bool has_start() const { return has_start_; }
 
     bool has_finish() const { return has_finish_; }
+
     static const unsigned int WIDTH = 6;
     static const unsigned int HEIGHT = 6;
 
@@ -253,6 +254,19 @@ public:
 
 };
 
+//TODO is there really nothing in std that checks for duplicates and does not modify the container or require it being sorted?
+template<class T>
+bool hasDuplicates(const std::vector<T> &arr) {
+    for (std::size_t i = 0; i < arr.size(); ++i) {
+        for (std::size_t j = i + 1; j < arr.size(); ++j) {
+            if (arr[i] == arr[j])
+                return true;
+        }
+    }
+    return false;
+}
+
+
 struct Turn {
     bool has_lost = true;
     std::vector<unsigned int> cards_to_discard;
@@ -261,14 +275,71 @@ struct Turn {
     bool is_discard_phase = false;
 
     bool is_valid(const PlayArea &area, const std::vector<std::unique_ptr<Card>> &hand) {
-        bool valid = true;
-        if (has_lost) {
-            // check if there was a possible turn
 
-        }
         if (hand.empty()) {
             return has_lost;// must loose
         }
+
+        if (has_lost) {
+            // check if a different turn was possible
+            if (hand.size() > 1) {
+                // could discard
+                return false;
+            } else {
+                // check if there is a large enough gap to play just one card
+                for (int i = 0; i < PlayArea::WIDTH; ++i) {
+                    for (int j = 0; j < PlayArea::HEIGHT; ++j) {
+                        if (area.get_num_discard(std::make_pair(i, j), hand[0]->value) == 0) {
+                            // could play at this position
+                            return false;
+                        }
+                    }
+
+                }
+            }
+        }
+
+
+        //all cards to discard must be different
+        if (hasDuplicates(cards_to_discard)) {
+            return false;
+        }
+
+        // dont play just discard
+        if (card_to_play == -1) {
+            if (cards_to_discard.size() == 2) {
+                return cards_to_discard[0] < hand.size() && cards_to_discard[1] < hand.size();
+            } else { return false; }
+        }
+
+        if (card_to_play > hand.size()) {
+            return false;
+        }
+
+        assert(hand[card_to_play] != nullptr);
+
+        // if at least one start card in hand and not played so far
+        if (area.has_start() && std::accumulate(hand.begin(), hand.end(), 0, [](auto accu, const auto &c) {
+            if (c->value == Card::START) {
+                return accu + 1;
+            } else { return accu; }
+        }) > 0) {
+            return (hand[card_to_play]->value == Card::START &&
+                    cards_to_discard.empty());
+        }
+
+        int num_discard = area.get_num_discard(position_played, hand[card_to_play]->value);
+        if (num_discard == -1) {
+            return false;
+        }
+        if (num_discard == cards_to_discard.size()) {
+            for (auto c: cards_to_discard) {
+                if (c >= hand.size() || c == card_to_play) { return false; }
+            }
+            return true;
+        }
+
+        return false;
     }
 
 };
