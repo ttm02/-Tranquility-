@@ -78,11 +78,11 @@ int PlayArea::get_num_discard(int pos, unsigned int new_card_value) const {
     }
 
     // position is in Boundaries and free
-    if (pos > 0 && pos < LENGTH &&
+    if (pos >= 0 && pos < LENGTH &&
         area[pos] == nullptr) {
 
-        int left_neighbor = pos == 0 ? pos : pos + 1;
-        int right_neighbor = pos == LENGTH - 1 ? pos : pos - 1;
+        int left_neighbor = pos == 0 ? pos : pos - 1;
+        int right_neighbor = pos == LENGTH - 1 ? pos : pos + 1;
 
         if (area[right_neighbor] == nullptr &&
             area[left_neighbor] == nullptr) {
@@ -102,8 +102,8 @@ int PlayArea::get_num_discard(int pos, unsigned int new_card_value) const {
                 if (new_card_value < area[left_neighbor]->value) {
                     return -1;
                 }
-                num_discard = std::min(new_card_value - num_discard,
-                                       area[left_neighbor]->value);
+                num_discard = std::min(num_discard,
+                                       new_card_value - area[left_neighbor]->value);
             }
             assert(num_discard < std::numeric_limits<int>::max());
             return static_cast<int>(num_discard);
