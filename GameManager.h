@@ -1,0 +1,118 @@
+#ifndef TRANQUILITY_GAMEMANAGER_H
+#define TRANQUILITY_GAMEMANAGER_H
+
+#include <memory>
+#include <vector>
+#include <algorithm>
+#include <cassert>
+
+#include "PlayArea.h"
+#include "PlayerStrategy.h"
+#include "Player.h"
+
+//TODO implement solo rules?
+#define MIN_PLAYER_COUNT 2
+#define MAX_PLAYER_COUNT 5
+
+#define NUM_DISCARD_DISCARD_PHASE 8
+
+struct Turn;
+
+class GameManager {
+
+public:
+    GameManager() = delete;
+
+    GameManager(GameManager &) = delete;
+
+    PlayArea area = PlayArea();
+
+    size_t get_hand_size(unsigned int player_number) {
+        assert(player_number < players.size());
+        return players[player_number]->hand.size();
+    }
+
+    size_t get_deck_size(unsigned int player_number) {
+        assert(player_number < players.size());
+        return players[player_number]->draw.size();
+    }
+
+    size_t get_discard_size(unsigned int player_number) {
+        assert(player_number < players.size());
+        return players[player_number]->discard.size();
+    }
+
+    size_t get_num_players() {
+        return players.size();
+    }
+
+    template<class R>
+    static bool RunNewGame(std::vector<std::unique_ptr<PlayerStrategy>> strategies, R &rng);
+
+private:
+    explicit GameManager(std::vector<std::unique_ptr<Player>> players) : players(std::move(players)) {
+
+    }
+
+    std::vector<int> run_discard_phase_negotiation();
+
+    void run_discard_phase_execution(const std::vector<int> &negotiation_result);
+
+    // return if won
+    bool run_game();
+
+    std::vector<std::unique_ptr<Player>> players;
+
+};
+
+struct Turn {
+    bool has_lost = true;
+    std::vector<unsigned int> cards_to_discard;
+    int card_to_play = -1;
+    std::pair<int, int> position_played = {-1, -1};
+    bool is_discard_phase = false;
+
+    bool is_valid(const PlayArea &area, const std::vector<std::unique_ptr<Card>> &hand);
+
+};
+
+template<class R>
+bool GameManager::RunNewGame(std::vector<std::unique_ptr<PlayerStrategy>> strategies, R &rng) {
+    auto num_players = strategies.size();
+    assert(MIN_PLAYER_COUNT <= num_players);
+    assert(num_players <= MAX_PLAYER_COUNT);
+
+    auto deck = create_deck();
+
+    std::shuffle(std::begin(deck), std::end(deck), rng);
+
+    std::vector<std::unique_ptr<Player>> players;
+
+    unsigned int cards_per_player = deck.size() / num_players;
+    auto reminder = deck.size() % num_players;
+
+    for (int i = 0; i < num_players; ++i) {
+        unsigned int cards_this_player = cards_per_player;
+        if (reminder > 0) {
+            cards_this_player++;
+            reminder--;
+        }
+        std::vector<std::unique_ptr<Card>> this_players_deck;
+        this_players_deck.reserve(cards_this_player + 1);
+
+        this_players_deck.push_back(std::make_unique<Card>(Card::START));
+        for (int j = 0; j < cards_this_player; ++j) {
+            this_players_deck.push_back(std::move(deck.back()));
+            deck.pop_back();
+        }
+        std::shuffle(std::begin(this_players_deck), std::end(this_players_deck), rng);
+
+        assert(strategies[i]->player_number == i);
+        players.push_back(std::make_unique<Player>(i, std::move(this_players_deck), std::move(strategies[i])));
+    }
+    auto GM = GameManager(std::move(players));
+    return GM.run_game();
+}
+
+
+#endif //TRANQUILITY_GAMEMANAGER_H
