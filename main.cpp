@@ -224,6 +224,9 @@ public:
 
 };
 
+const unsigned int PlayArea::WIDTH;
+const unsigned int PlayArea::HEIGHT;
+
 class PlayerStrategy;
 
 class Player {
@@ -460,7 +463,29 @@ private:
             }
             current_offer = new_offer;
         }
+        return current_offer;
+    }
 
+    void run_discard_phase_execution(const std::vector<int> &negotiation_result) {
+
+        for (auto &p: players) {
+            Turn discard_turn = p->strategy->perform_discard(*this, negotiation_result);
+            assert(discard_turn.is_valid(area, p->hand));
+            assert(discard_turn.cards_to_discard.size() == negotiation_result[p->player_number]);
+            // perform the discard
+            //TODO bad smell: code duplication
+            for (auto d: discard_turn.cards_to_discard) {
+                p->discard.push_back(std::move(p->hand[d]));
+                p->hand.erase(p->hand.begin() + d);
+            }
+            // register turn with other players, so they know what is going on
+            for (auto &other_p: players) {
+                if (p != other_p) {// no need to register with itself
+                    other_p->strategy->register_move(p->player_number, discard_turn);
+                }
+            }
+            p->draw_to_hand_size();
+        }
     }
 
     // return if won
@@ -505,8 +530,9 @@ private:
                             players[1]->hand.push_back(std::move(players[1]->draw.back()));
                             players[1]->draw.pop_back();
                         }
+                        auto negotiation_result = run_discard_phase_negotiation();
+                        run_discard_phase_execution(negotiation_result);
                     }
-                    // negotiation phase
                 }
             }
         }
