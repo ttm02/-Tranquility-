@@ -14,6 +14,8 @@
 #define MIN_PLAYER_COUNT 3
 #define MAX_PLAYER_COUNT 5
 
+#define NUM_DISCARD_DISCARD_PHASE 8
+
 class Card {
 public:
     const unsigned int value;
@@ -59,6 +61,7 @@ std::vector<std::unique_ptr<Card>> create_deck() {
 
 class GameManager;
 
+//TODO refactor; the play area is not 2d it is just presented as 2d
 class PlayArea {
 public:
     PlayArea() {
@@ -113,7 +116,7 @@ public:
                     }
                 });
             });
-            if (not has_finish_ && num_gaps == 0) {
+            if (not has_finish_ && num_gaps == 0 && has_start_) {
                 return 0;
             } else {
                 return -1;
@@ -432,9 +435,59 @@ private:
 
     }
 
-    // return won
+    std::vector<int> run_discard_phase_negotiation() {
+
+        std::vector<int> current_offer(players.size(), -1);
+        std::vector<int> new_offer(players.size(), -1);
+
+        // operator + is default for accumulate
+        while (std::accumulate(current_offer.begin(), current_offer.end(), 0) != NUM_DISCARD_DISCARD_PHASE) {
+            for (auto &p: players) {
+                new_offer[p->player_number] = p->strategy->negotiate_discard_phase(*this, current_offer);
+            }
+            current_offer = new_offer;
+        }
+
+    }
+
+    // return if won
     bool run_game() {
-        return false;
+
+        while (true) {
+            for (auto &p: players) {
+                auto turn = p->strategy->make_turn(*this, p->hand);
+                assert(turn.is_valid(area, p->hand));
+                if (turn.has_lost) {
+                    return false;// lost
+                }
+                // track if start card was played
+                bool enter_discard_phase = false;
+                // execute turn
+                if (turn.card_to_play != -1) {
+                    enter_discard_phase = p->hand[turn.card_to_play]->value == Card::START;
+                    area.play_card(turn.position_played, std::move(p->hand[turn.card_to_play]));
+                    p->hand.erase(p->hand.begin() + turn.card_to_play);
+                }
+                for (auto d: turn.cards_to_discard) {
+                    p->discard.push_back(std::move(p->hand[d]));
+                    p->hand.erase(p->hand.begin() + d);
+                }
+                // register turn with other players, so they know what is going on
+                for (auto &other_p: players) {
+                    if (p != other_p) {// no need to register with itself
+                        other_p->strategy->register_move(p->player_number, turn);
+                    }
+                }
+                p->draw_to_hand_size();
+
+                if (area.has_finish()) {
+                    return true; // won
+                }
+                if (enter_discard_phase) {
+                    // negotiation phase
+                }
+            }
+        }
     }
 
     std::vector<std::unique_ptr<Player>> players;
