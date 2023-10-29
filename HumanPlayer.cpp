@@ -83,7 +83,7 @@ Turn HumanPlayer::perform_discard(
     cards_to_exclude_showing.push_back(turn.card_to_play);
     for (int i = 0; i < num_cards_to_discard; ++i) {
         print_hand(hand, cards_to_exclude_showing);
-        std::cout << "Which cards to discard? (" << num_cards_to_discard - i << "remaining): ";
+        std::cout << "Which cards to discard? (" << num_cards_to_discard - i << " remaining): ";
         int to_discard;
         std::cin >> to_discard;
         turn.cards_to_discard.push_back(to_discard);
@@ -163,7 +163,7 @@ Turn HumanPlayer::make_turn(const GameManager &GM,
         cards_to_exclude_showing.push_back(turn.card_to_play);
         for (int i = 0; i < num_cards_to_discard; ++i) {
             print_hand(hand, cards_to_exclude_showing);
-            std::cout << "Which cards to discard? (" << num_cards_to_discard - i << "remaining): ";
+            std::cout << "Which cards to discard? (" << num_cards_to_discard - i << " remaining): ";
             int to_discard;
             std::cin >> to_discard;
             turn.cards_to_discard.push_back(to_discard);
