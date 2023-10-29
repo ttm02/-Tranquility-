@@ -81,11 +81,11 @@ public:
         assert(get_num_discard(pos, card->value) != -1);
 
         if (card->value == Card::START) {
-            has_start = true;
+            has_start_ = true;
             return;
         }
         if (card->value == Card::FINISH) {
-            has_finish = true;
+            has_finish_ = true;
             return;
         }
         area[pos.first][pos.second] = std::move(card);
@@ -96,7 +96,7 @@ public:
     int get_num_discard(std::pair<int, int> pos, unsigned int new_card_value) const {
         if (new_card_value == Card::START) {
             // check if valid
-            if (not has_start) {
+            if (not has_start_) {
                 return 0;
             }
             {
@@ -113,7 +113,7 @@ public:
                     }
                 });
             });
-            if (not has_finish && num_gaps == 0) {
+            if (not has_finish_ && num_gaps == 0) {
                 return 0;
             } else {
                 return -1;
@@ -170,15 +170,19 @@ public:
         }
     }
 
-    bool has_start = false;
-    bool has_finish = false;
+private:
+    bool has_start_ = false;
+    bool has_finish_ = false;
+public:
+    bool has_start() const { return has_start_; }
 
+    bool has_finish() const { return has_finish_; }
     static const unsigned int WIDTH = 6;
     static const unsigned int HEIGHT = 6;
 
     void print() const {
         // first row
-        if (has_start) {
+        if (has_start_) {
             std::cout << " S";
         } else {
             std::cout << "  ";
@@ -206,7 +210,7 @@ public:
         for (int i = 0; i < WIDTH; ++i) {
             std::cout << "\t" << std::setw(2) << i;
         }
-        if (has_finish) {
+        if (has_finish_) {
             std::cout << "\t" << " F";
         } else {
             std::cout << "\t" << "  ";
