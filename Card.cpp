@@ -4,9 +4,9 @@
 
 #include "Card.h"
 
-const unsigned int Card::MAX_VALUE;
-const unsigned int Card::START;
-const unsigned int Card::FINISH;
+const int Card::MAX_VALUE;
+const int Card::START;
+const int Card::FINISH;
 
 std::vector<std::unique_ptr<Card>> create_deck() {
     std::vector<std::unique_ptr<Card>> deck;
@@ -16,7 +16,7 @@ std::vector<std::unique_ptr<Card>> create_deck() {
 //deck.push_back(std::make_unique<Card>(Card::START));// each player gets one start card
         deck.push_back(std::make_unique<Card>(Card::FINISH));
     }
-    for (unsigned int i = 0 + 1; i < Card::MAX_VALUE + 1; ++i) {
+    for (int i = 0 + 1; i < Card::MAX_VALUE + 1; ++i) {
         deck.push_back(std::make_unique<Card>(i));
     }
 

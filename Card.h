@@ -7,17 +7,17 @@
 
 class Card {
 public:
-    const unsigned int value;
+    const int value;
 
     // max value is inclusive
-    static const unsigned int MAX_VALUE = 80;
+    static const int MAX_VALUE = 80;
 
     // special value
-    static const unsigned int START = 100;
+    static const int START = 100;
 
-    static const unsigned int FINISH = 101;
+    static const int FINISH = 101;
 
-    explicit Card(unsigned int v) : value(v) {};
+    explicit Card(int v) : value(v) {};
 
     // not copy able
     Card(const Card &) = delete;
