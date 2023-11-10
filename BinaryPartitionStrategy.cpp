@@ -11,6 +11,10 @@
 
 Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand) {
 
+    //DEBUG:
+    print_hand(hand);
+    GM.area.print();
+
     //TODO extract this as utility to base class
     Turn turn;
     turn.has_lost = true;
@@ -41,9 +45,7 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
     // END Check for lost, start, finish
 
 
-    //DEBUG:
-    print_hand(hand);
-    GM.area.print();
+
 
     // idea find the position that is "as much middle as possible"
     // if possible: fill in gaps if a card is safe to discard
