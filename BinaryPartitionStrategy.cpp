@@ -240,12 +240,16 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
     // it is safe if:
 
     // start is not needed anymore
-    if (card_value == Card::START && GM.area.has_start()) {
-        return true;
+    if (card_value == Card::START) {
+        return GM.area.has_start();
     }
+
     //TODO finish?
     // is safe if we have multiple in hand or if we know we have a finish card left in draw:
     // if we havent discarded NUM_Finish/num_players yet
+    if (card_value == Card::FINISH) {
+        return false;
+    }
 
     int larger = -1;
     int smaller = -1;
@@ -285,7 +289,7 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
             return true;
         }
         if (larger == 1) {
-            return card_value > GM.area.get_area()[larger]->value - SAFTEY_MARGIN;
+            return card_value < GM.area.get_area()[larger]->value - SAFTEY_MARGIN;
         }
     }
 
@@ -295,7 +299,7 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
             return true;
         }
         if (smaller == PlayArea::LENGTH - 2) {
-            return card_value < GM.area.get_area()[smaller]->value + SAFTEY_MARGIN;
+            return card_value > GM.area.get_area()[smaller]->value + SAFTEY_MARGIN;
         }
     }
 
