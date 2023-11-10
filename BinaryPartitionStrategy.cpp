@@ -136,13 +136,63 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
 int
 BinaryPartitionStrategy::negotiate_discard_phase(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand,
                                                  const std::vector<int> current_offer) {
+    discard_negotiation_round++;
 
-    //TODO implement
-    assert(false);
+    //TODO code duplication
+    int num_safe_discards = 0;
+    for (int i = 0; i < hand.size(); ++i) {
+        if (is_card_safe_to_discard(GM, i, hand)) {
+            num_safe_discards++;
+            std::cout << hand[i]->value << ", ";
+        }
+    }
+    if (discard_negotiation_round == 1) {
+        return num_safe_discards;
+    }
+    // operator + is default for accumulate
+    // agreed on discarding too much
+    if (std::accumulate(current_offer.begin(), current_offer.end(), 0) > NUM_DISCARD_DISCARD_PHASE) {
+        int my_offer = current_offer[player_number];
+        if (discard_negotiation_round % GM.get_num_players() == player_number) {
+            my_offer--;
+        }
+        return my_offer;
+    }
+    // not enough
+    assert(std::accumulate(current_offer.begin(), current_offer.end(), 0) < NUM_DISCARD_DISCARD_PHASE);
+
+    assert(false); // TODO IMPLEMENT
 }
 
 Turn BinaryPartitionStrategy::perform_discard(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand,
                                               const std::vector<int> negotiation_result) {
+
+
+    Turn turn;
+    turn.is_discard_phase = true;
+    //TODO code duplication
+    int num_safe_discards = 0;
+    for (int i = 0; i < hand.size(); ++i) {
+        if (is_card_safe_to_discard(GM, i, hand)) {
+            num_safe_discards++;
+            std::cout << hand[i]->value << ", ";
+        }
+    }
+    int num_to_discard = negotiation_result[player_number];
+
+    if (num_safe_discards <= num_to_discard) {
+        // todo code duplication
+        for (int i = 0; i < hand.size() && num_to_discard > 0; ++i) {
+            if (is_card_safe_to_discard(GM, i, hand)) {
+                num_to_discard--;
+                turn.cards_to_discard.push_back(i);
+                discarded_values.push_back(hand[i]->value);
+                //std::cout << hand[i]->value << ", ";
+            }
+        }
+        std::cout << "\n";
+        return turn;
+    }
 
     //TODO implement
     assert(false);

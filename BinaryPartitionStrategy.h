@@ -46,6 +46,8 @@ private:
     int discard_safety_margin = 1;
     int num_unsafe_turns = 0;// for statistics
 
+    int discard_negotiation_round = 0;
+
 };
 
 
