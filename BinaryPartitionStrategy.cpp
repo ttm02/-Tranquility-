@@ -107,12 +107,15 @@ std::tuple<int, int, int> BinaryPartitionStrategy::find_best_middle_card_to_play
                 if (GM.area.get_area()[previous_played_pos] != nullptr) {
                     val_left = GM.area.get_area()[previous_played_pos]->value;
                 }
-                // +1 for odd values (for even values ther is no exact middle, we also stick with +1)
-                unsigned middle_pos = previous_played_pos + 1 + ((i - previous_played_pos) / 2);
+                // +1 for odd values (for even values there is no exact middle, we also stick with +1)
+                unsigned middle_pos = previous_played_pos + ((current_pos - previous_played_pos) / 2);
                 int middle_value =
                         val_left + (val_right - val_left) / 2;
                 auto best_fit = find_best_card(middle_value, hand);
-                if (current_best_delta > best_fit.first) {
+                if (current_best_delta > best_fit.first
+                    && val_left < hand[best_fit.second]->value &&
+                    hand[best_fit.second]->value < val_right
+                        ) {
                     current_best_delta = best_fit.first;
                     current_card_to_play = best_fit.second;
                     current_best_pos = middle_pos;
