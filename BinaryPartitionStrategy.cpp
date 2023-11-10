@@ -48,6 +48,20 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
 
     auto fill_gap = find_best_adjacent(GM, hand);
 
+    std::cout << "Safe to discard: ";
+    int num_safe_discards = 0;
+    for (int i = 0; i < hand.size(); ++i) {
+        if (is_card_safe_to_discard(GM, hand[i]->value)) {
+            num_safe_discards++;
+            std::cout << ", " << hand[i]->value;
+        }
+    }
+    std::cout << "\n";
+
+    if (num_safe_discards >= std::get<0>(fill_gap)) {
+        assert(false && "TODO IMPLEMENT FILL GAP");
+    }
+
     assert(std::get<1>(middle_gap) != -1);//TODO implement
     std::cout << "middle position: " << std::get<1>(middle_gap) << " Card To Play: "
               << hand[std::get<2>(middle_gap)]->value << "\n";
@@ -142,6 +156,8 @@ std::tuple<int, int, int> BinaryPartitionStrategy::find_best_middle_card_to_play
                 for (int j = 0; j < hand.size(); ++j) {
                     // positions -2 to leave space for the adjacend card (will be handled in different method)
                     // therefore we also subtract 2 from value search space
+                    //TODO but the endings needs to be included fully??
+
                     int best_pos = find_pos_for_card(hand[j]->value,
                                                      previous_played_pos + 2, current_pos - 2,
                                                      val_left + 2, val_right - 2);
@@ -208,5 +224,52 @@ BinaryPartitionStrategy::find_best_adjacent(const GameManager &GM, const std::ve
 
     std::cout << "Best discard to adjacent: " << current_best_num_discard << "\n";
     return std::make_tuple(current_best_num_discard, current_best_pos, current_card_to_play);
+
+}
+
+bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int card_value) {
+    // it is safe if:
+
+    // start is not needed anymore
+    if (card_value == Card::START && GM.area.has_start()) {
+        return true;
+    }
+    //TODO finish?
+    // is safe if we have multiple in hand or if we know we have a finish card left in draw:
+    // if we havent discarded NUM_Finish/num_players yet
+
+    int larger = -1;
+    int smaller = -1;
+
+    for (int i = 0; i < PlayArea::LENGTH; ++i) {
+        if (GM.area.get_area()[i] != nullptr) {
+            int value_in_field = GM.area.get_area()[i]->value;
+            if (value_in_field < card_value) {
+                smaller = i;
+            }
+            if (value_in_field > card_value) {
+                larger = i;
+                break;
+            }
+        }
+    }
+
+    //we know that the safety margin may increase when the negotiate discard phase happens
+    // it may also be the case that it increases when other has only unsafe cards but must play
+#define SAFTEY_MARGIN 1
+    if (larger != -1 && smaller != -1) {
+        if (larger - smaller == 1) {
+            // no more gaps in between
+            //immedeately adjacent
+            return true;
+        }
+        if (larger - smaller == 2) {
+            //only one space left
+            return GM.area.get_area()[smaller]->value + SAFTEY_MARGIN < card_value &&
+                   card_value > GM.area.get_area()[larger]->value - SAFTEY_MARGIN;
+        }
+    }
+
+    return false;
 
 }

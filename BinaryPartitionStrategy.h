@@ -33,20 +33,7 @@ private:
     find_best_adjacent(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand);
 
 
-    // return delta, card
-    inline std::pair<int, unsigned>
-    find_best_card(const int target_value, const std::vector<std::unique_ptr<Card>> &hand) {
-
-        int current_best_value = std::numeric_limits<int>::max();
-        unsigned pos = 0;
-        for (int i = 0; i < hand.size(); ++i) {
-            if (std::abs(hand[i]->value - target_value) < current_best_value) {
-                current_best_value = std::abs(hand[i]->value - target_value);
-                pos = i;
-            }
-        }
-        return std::make_pair(current_best_value, pos);
-    }
+    bool is_card_safe_to_discard(const GameManager &GM, int card_value);
 
 };
 
