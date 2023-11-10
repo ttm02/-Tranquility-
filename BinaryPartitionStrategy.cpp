@@ -84,6 +84,38 @@ Turn BinaryPartitionStrategy::perform_discard(const GameManager &GM, const std::
 }
 
 
+// binary search: best position for the given card inside of a larger gap
+// start pos and end pos are inclusive
+int find_pos_for_card(int card_value, int start_pos, int end_pos, int start_value, int end_value) {
+
+    assert(start_pos <= end_pos);
+    assert(start_value <= end_value);
+
+    int length = end_pos - start_pos + 1;
+    int middle_value = start_value + (end_value - start_value) / 2;
+    int middle_pos = start_pos + length / 2;
+
+    if (start_value == end_value) {
+        return middle_pos;
+    }
+
+    if (length == 1) {
+        assert(start_pos == end_pos);
+        return start_pos;
+    }
+    if (length == 2) {
+        return card_value < middle_value ? start_pos : end_pos;
+    }
+
+    int left_pos = find_pos_for_card(card_value, start_pos, middle_pos, start_value, middle_value);
+    int right_pos = find_pos_for_card(card_value, middle_pos, end_pos, middle_value, end_value);
+    // both times the middle is included
+    // meaning that one time the middle pos will be "best" i.e. in the wrong array side
+    // or both are middle
+    return left_pos == middle_pos ? right_pos : left_pos;
+}
+
+
 std::tuple<int, int, int> BinaryPartitionStrategy::find_best_middle_card_to_play(const GameManager &GM,
                                                                                  const std::vector<std::unique_ptr<Card>> &hand) {
 
@@ -107,26 +139,32 @@ std::tuple<int, int, int> BinaryPartitionStrategy::find_best_middle_card_to_play
                 if (GM.area.get_area()[previous_played_pos] != nullptr) {
                     val_left = GM.area.get_area()[previous_played_pos]->value;
                 }
-                // +1 for odd values (for even values there is no exact middle, we also stick with +1)
-                unsigned middle_pos = previous_played_pos + ((current_pos - previous_played_pos) / 2);
-                int middle_value =
-                        val_left + (val_right - val_left) / 2;
-                auto best_fit = find_best_card(middle_value, hand);
-                if (current_best_delta > best_fit.first
-                    && val_left < hand[best_fit.second]->value &&
-                    hand[best_fit.second]->value < val_right
-                        ) {
-                    // check if this move invalidates the board
-                    // i.e. not enough possible cards fo fill the resulting gaps
-                    bool is_valid =
-                            // left side
-                            hand[best_fit.second]->value - val_left > middle_pos - previous_played_pos &&
-                            // right side
-                            val_right - hand[best_fit.second]->value > current_pos - middle_pos;
-                    if (is_valid) {
-                        current_best_delta = best_fit.first;
-                        current_card_to_play = best_fit.second;
-                        current_best_pos = middle_pos;
+                for (int j = 0; j < hand.size(); ++j) {
+
+                    int best_pos = find_pos_for_card(hand[j]->value, previous_played_pos + 1, current_pos - 1, val_left,
+                                                     val_right);
+                    int approx_value_required = (val_right - val_left) /
+                                                (current_pos - previous_played_pos) *
+                                                (best_pos - previous_played_pos);
+                    int delta = std::abs(hand[j]->value - approx_value_required);
+
+
+                    if (current_best_delta > delta
+                        && val_left < hand[j]->value &&
+                        hand[j]->value < val_right
+                            ) {
+                        // check if this move invalidates the board
+                        // i.e. not enough possible cards fo fill the resulting gaps
+                        bool is_valid =
+                                // left side
+                                hand[j]->value - val_left > best_pos - previous_played_pos &&
+                                // right side
+                                val_right - hand[j]->value > current_pos - best_pos;
+                        if (is_valid) {
+                            current_best_delta = delta;
+                            current_card_to_play = j;
+                            current_best_pos = best_pos;
+                        }
                     }
                 }
             }
