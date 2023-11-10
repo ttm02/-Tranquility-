@@ -279,6 +279,26 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
         }
     }
 
+    if (smaller == -1 && larger != -1) {
+        // so small it will not be played anymore
+        if (larger == 0) {
+            return true;
+        }
+        if (larger == 1) {
+            return card_value > GM.area.get_area()[larger]->value - SAFTEY_MARGIN;
+        }
+    }
+
+    if (smaller != -1 && larger == -1) {
+        // so large it will not be played anymore
+        if (smaller == PlayArea::LENGTH - 1) {
+            return true;
+        }
+        if (smaller == PlayArea::LENGTH - 2) {
+            return card_value < GM.area.get_area()[smaller]->value + SAFTEY_MARGIN;
+        }
+    }
+
     return false;
 
 }
