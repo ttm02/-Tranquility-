@@ -19,6 +19,9 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
     Turn turn;
     turn.has_lost = true;
     if (turn.is_valid(GM.area, hand)) {
+        if (hand.size() <= 1) {
+            std::cout << "Run out of cards\n";
+        }
         std::cout << "HAS LOST\n";
         return turn;
     }
