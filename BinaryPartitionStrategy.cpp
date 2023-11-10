@@ -59,15 +59,32 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
     for (int i = 0; i < hand.size(); ++i) {
         if (is_card_safe_to_discard(GM, hand[i]->value)) {
             num_safe_discards++;
-            std::cout << ", " << hand[i]->value;
+            std::cout << hand[i]->value << ", ";
         }
     }
     std::cout << "\n";
 
     if (num_safe_discards >= std::get<0>(fill_gap)) {
-        assert(false && "TODO IMPLEMENT FILL GAP");
+        std::cout << "fill gap position: " << std::get<1>(fill_gap) << " Card To Play: "
+                  << hand[std::get<2>(fill_gap)]->value << "Discard: ";
+        // can safetly fill a gap
+        // fill a gap turn
+        turn.position_played = std::get<1>(fill_gap);
+        turn.card_to_play = std::get<2>(fill_gap);
+        int num_to_discard = GM.area.get_num_discard(turn.position_played, hand[turn.card_to_play]->value);
+        for (int i = 0; i < hand.size() && num_to_discard > 0; ++i) {
+            if (is_card_safe_to_discard(GM, hand[i]->value)) {
+                assert(i != turn.card_to_play);
+                num_to_discard--;
+                turn.cards_to_discard.push_back(i);
+                std::cout << hand[i]->value << ", ";
+            }
+        }
+        std::cout << "\n";
+        return turn;
     }
 
+    // fill a middle turn
     assert(std::get<1>(middle_gap) != -1);//TODO implement
     std::cout << "middle position: " << std::get<1>(middle_gap) << " Card To Play: "
               << hand[std::get<2>(middle_gap)]->value << "\n";
