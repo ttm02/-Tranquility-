@@ -116,9 +116,18 @@ std::tuple<int, int, int> BinaryPartitionStrategy::find_best_middle_card_to_play
                     && val_left < hand[best_fit.second]->value &&
                     hand[best_fit.second]->value < val_right
                         ) {
-                    current_best_delta = best_fit.first;
-                    current_card_to_play = best_fit.second;
-                    current_best_pos = middle_pos;
+                    // check if this move invalidates the board
+                    // i.e. not enough possible cards fo fill the resulting gaps
+                    bool is_valid =
+                            // left side
+                            hand[best_fit.second]->value - val_left > middle_pos - previous_played_pos &&
+                            // right side
+                            val_right - hand[best_fit.second]->value > current_pos - middle_pos;
+                    if (is_valid) {
+                        current_best_delta = best_fit.first;
+                        current_card_to_play = best_fit.second;
+                        current_best_pos = middle_pos;
+                    }
                 }
             }
             previous_played_pos = i;
