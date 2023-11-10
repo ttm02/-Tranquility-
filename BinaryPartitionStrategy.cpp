@@ -85,17 +85,37 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
     }
 
     // fill a middle turn
-    assert(std::get<1>(middle_gap) != -1);//TODO implement
-    std::cout << "middle position: " << std::get<1>(middle_gap) << " Card To Play: "
-              << hand[std::get<2>(middle_gap)]->value << "\n";
+    if (std::get<1>(middle_gap) != -1) {
+        std::cout << "middle position: " << std::get<1>(middle_gap) << " Card To Play: "
+                  << hand[std::get<2>(middle_gap)]->value << "\n";
 
 
-    turn.position_played = std::get<1>(middle_gap);
-    turn.card_to_play = std::get<2>(middle_gap);
+        turn.position_played = std::get<1>(middle_gap);
+        turn.card_to_play = std::get<2>(middle_gap);
+        return turn;
+    }
+
+    if (num_safe_discards >= 2) {
+        // do a discard turn
+        std::cout << "Discard 2: ";
+        int num_to_discard = 2;
+        for (int i = 0; i < hand.size() && num_to_discard > 0; ++i) {
+            if (is_card_safe_to_discard(GM, hand[i]->value)) {
+                assert(i != turn.card_to_play);
+                num_to_discard--;
+                turn.cards_to_discard.push_back(i);
+                std::cout << hand[i]->value << ", ";
+            }
+        }
+        std::cout << "\n";
+    }
 
 
-    // print before each turn to see what is happening
-    GM.area.print();
+    num_unsafe_turns++;
+
+
+
+    // stop to see what is happening
     std::cout << "Confirm Turn ";
 
     std::cin.get();// wait for enter
@@ -286,7 +306,6 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
 
     //we know that the safety margin may increase when the negotiate discard phase happens
     // it may also be the case that it increases when other has only unsafe cards but must play
-#define SAFTEY_MARGIN 1
     if (larger != -1 && smaller != -1) {
         if (larger - smaller == 1) {
             // no more gaps in between
@@ -295,8 +314,8 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
         }
         if (larger - smaller == 2) {
             //only one space left
-            return GM.area.get_area()[smaller]->value + SAFTEY_MARGIN < card_value &&
-                   card_value > GM.area.get_area()[larger]->value - SAFTEY_MARGIN;
+            return GM.area.get_area()[smaller]->value + discard_safety_margin < card_value &&
+                   card_value > GM.area.get_area()[larger]->value - discard_safety_margin;
         }
     }
 
@@ -306,7 +325,7 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
             return true;
         }
         if (larger == 1) {
-            return card_value < GM.area.get_area()[larger]->value - SAFTEY_MARGIN;
+            return card_value < GM.area.get_area()[larger]->value - discard_safety_margin;
         }
     }
 
@@ -316,7 +335,7 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
             return true;
         }
         if (smaller == PlayArea::LENGTH - 2) {
-            return card_value > GM.area.get_area()[smaller]->value + SAFTEY_MARGIN;
+            return card_value > GM.area.get_area()[smaller]->value + discard_safety_margin;
         }
     }
 

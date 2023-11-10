@@ -35,6 +35,9 @@ private:
 
     bool is_card_safe_to_discard(const GameManager &GM, int card_value);
 
+    int discard_safety_margin = 1;
+    int num_unsafe_turns = 0;// for statistics
+
 };
 
 
