@@ -12,8 +12,8 @@
 Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand) {
 
     //DEBUG:
-    print_hand(hand);
-    GM.area.print();
+    //print_hand(hand);
+    //GM.area.print();
 
     //TODO extract this as utility to base class
     Turn turn;
@@ -71,7 +71,8 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
 
     if (num_safe_discards >= std::get<0>(fill_gap)) {
         std::cout << "fill gap position: " << std::get<1>(fill_gap) << " Card To Play: "
-                  << hand[std::get<2>(fill_gap)]->value << "Discard: ";
+                                                                    << hand[std::get<2>(fill_gap)]->value
+                                                                    << " Discard: ";
         // can safetly fill a gap
         // fill a gap turn
         turn.position_played = std::get<1>(fill_gap);
@@ -302,7 +303,7 @@ std::tuple<int, int, int> BinaryPartitionStrategy::find_best_middle_card_to_play
         }
     }
 
-    std::cout << "Best Delta for middle Play: " << current_best_delta << "\n";
+    //std::cout << "Best Delta for middle Play: " << current_best_delta << "\n";
 
     return std::make_tuple(current_best_delta, current_best_pos, current_card_to_play);
 
@@ -331,7 +332,7 @@ BinaryPartitionStrategy::find_best_adjacent(const GameManager &GM, const std::ve
     }
 
 
-    std::cout << "Best discard to adjacent: " << current_best_num_discard << "\n";
+    //std::cout << "Best discard to adjacent: " << current_best_num_discard << "\n";
     return std::make_tuple(current_best_num_discard, current_best_pos, current_card_to_play);
 
 }
