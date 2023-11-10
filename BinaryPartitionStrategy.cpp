@@ -92,7 +92,14 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
 
         turn.position_played = std::get<1>(middle_gap);
         turn.card_to_play = std::get<2>(middle_gap);
+
+        // stop to see what is happening
+        //std::cout << "Confirm Turn ";
+        //std::cin.get();// wait for enter
+        //std::cout << "\n";
+
         return turn;
+
     }
 
     if (num_safe_discards >= 2) {
@@ -315,7 +322,13 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
         if (larger - smaller == 2) {
             //only one space left
             return GM.area.get_area()[smaller]->value + discard_safety_margin < card_value &&
-                   card_value > GM.area.get_area()[larger]->value - discard_safety_margin;
+                   card_value < GM.area.get_area()[larger]->value - discard_safety_margin;
+        }
+        if (larger - smaller == 3) {
+            //two spaces left
+            // use slightly higher discard margin to be safe
+            return GM.area.get_area()[smaller]->value + discard_safety_margin + 1 < card_value &&
+                   card_value < GM.area.get_area()[larger]->value - (discard_safety_margin + 1);
         }
     }
 
