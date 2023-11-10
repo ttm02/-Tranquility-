@@ -297,7 +297,27 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
     // if we havent discarded NUM_Finish/num_players yet
     //TODO or if we have multiple Finish cards in hand
     if (card_value == Card::FINISH) {
-        return false;
+        for (int i = position + 1; i < hand.size(); ++i) {
+            if (hand[i]->value == Card::FINISH) {
+                return true;
+            }
+        }
+        // only if last finish in hand:
+        int num_already_discarded = get_num_finish_discarded();
+        for (int i = position - 1; i > 0; --i) {
+            if (hand[i]->value == Card::FINISH) {
+                num_already_discarded++;// will at some point discard the other finish cards in hand
+            }
+        }
+
+        int allowed_to_discard = GM.get_num_finish_in_total_deck() / GM.get_num_players(); // num discards per player
+        if (GM.get_num_finish_in_total_deck() % GM.get_num_players() == 0 &&
+            GM.get_num_players() == player_number - 1) {
+            // may not discard the last finish if last player
+            allowed_to_discard--;
+        }
+
+        return num_already_discarded < allowed_to_discard;
     }
 
     int larger = -1;

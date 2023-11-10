@@ -28,26 +28,26 @@ public:
 
     PlayArea area = PlayArea();
 
-    size_t get_hand_size(unsigned int player_number) {
+    size_t get_hand_size(unsigned int player_number) const {
         assert(player_number < players.size());
         return players[player_number]->hand.size();
     }
 
-    size_t get_deck_size(unsigned int player_number) {
+    size_t get_deck_size(unsigned int player_number) const {
         assert(player_number < players.size());
         return players[player_number]->draw.size();
     }
 
-    size_t get_discard_size(unsigned int player_number) {
+    size_t get_discard_size(unsigned int player_number) const {
         assert(player_number < players.size());
         return players[player_number]->discard.size();
     }
 
-    size_t get_num_players() {
+    size_t get_num_players() const {
         return players.size();
     }
 
-    int get_num_finish_in_total_deck() {
+    int get_num_finish_in_total_deck() const {
         //TODO refactroring: use same constant when creating the deck
         return 5;
     }
