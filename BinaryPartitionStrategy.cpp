@@ -117,12 +117,11 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
             }
         }
         std::cout << "\n";
+        return turn;
     }
 
 
     num_unsafe_turns++;
-
-
 
     // stop to see what is happening
     std::cout << "Confirm Turn ";
