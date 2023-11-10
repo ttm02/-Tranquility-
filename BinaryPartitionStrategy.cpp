@@ -4,6 +4,7 @@
 
 #include "BinaryPartitionStrategy.h"
 #include "GameManager.h"
+#include "HumanPlayer.h"
 
 #include <iostream>
 
@@ -38,6 +39,11 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
         }
     }
     // END Check for lost, start, finish
+
+
+    //DEBUG:
+    print_hand(hand);
+    GM.area.print();
 
     // idea find the position that is "as much middle as possible"
     // if possible: fill in gaps if a card is safe to discard

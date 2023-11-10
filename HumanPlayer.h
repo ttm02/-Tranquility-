@@ -10,6 +10,8 @@
 
 #include <cassert>
 
+void print_hand(const std::vector<std::unique_ptr<Card>> &hand, std::vector<int> to_exclude = {});
+
 class HumanPlayer : public PlayerAgent {
 
 public:
@@ -26,7 +28,6 @@ public:
                          const std::vector<int> negotiation_result) override;
 
 private:
-    void print_hand(const std::vector<std::unique_ptr<Card>> &hand, std::vector<int> to_exclude = {});
 };
 
 

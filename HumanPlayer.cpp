@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <iostream>
 
-void HumanPlayer::print_hand(const std::vector<std::unique_ptr<Card>> &hand,
+void print_hand(const std::vector<std::unique_ptr<Card>> &hand,
                              std::vector<int> to_exclude) {
     std::cout << "Your Hand:\n";
 
