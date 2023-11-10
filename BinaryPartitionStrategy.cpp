@@ -151,21 +151,24 @@ std::tuple<int, int, int> BinaryPartitionStrategy::find_best_middle_card_to_play
                 // otherwise: no space to play in between without adjacency
 
                 unsigned current_pos = i;
-                unsigned val_right = Card::MAX_VALUE;
+                unsigned val_right = Card::MAX_VALUE + 1;
                 if (GM.area.get_area()[i] != nullptr) {
                     val_right = GM.area.get_area()[i]->value;
                 }
-                unsigned val_left = 1;
+                unsigned val_left = 1 - 1;
                 if (GM.area.get_area()[previous_played_pos] != nullptr) {
                     val_left = GM.area.get_area()[previous_played_pos]->value;
                 }
                 for (int j = 0; j < hand.size(); ++j) {
                     // positions -2 to leave space for the adjacend card (will be handled in different method)
                     // therefore we also subtract 2 from value search space
-                    //TODO but the endings needs to be included fully??
+                    //but the endings needs to be included fully
+                    int left_begin_search =
+                            GM.area.get_area()[previous_played_pos] != nullptr ? previous_played_pos + 2 : 0;
+                    int right_begin_search = GM.area.get_area()[current_pos] != nullptr ? current_pos - 2 : current_pos;
 
                     int best_pos = find_pos_for_card(hand[j]->value,
-                                                     previous_played_pos + 2, current_pos - 2,
+                                                     left_begin_search, right_begin_search,
                                                      val_left + 2, val_right - 2);
                     int val_diff = val_right - val_left;
                     int pos_diff = current_pos - previous_played_pos;
