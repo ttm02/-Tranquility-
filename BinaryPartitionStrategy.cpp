@@ -20,7 +20,7 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
     }
     turn.has_lost = false;
 
-    if (not GM.area.has_start() && num_start_in_hand(hand) > 1) {
+    if (not GM.area.has_start() && num_start_in_hand(hand) >= 1) {
         for (int i = 0; i < hand.size(); ++i) {
             if (hand[i]->value == Card::START) {
                 turn.card_to_play = i;
