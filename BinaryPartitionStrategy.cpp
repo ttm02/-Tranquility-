@@ -9,6 +9,8 @@
 #include <iostream>
 
 
+//Problem: one player ran out of cards, The other player had finish and the required missing card (including spare cards to fit it in) in hand
+
 Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand) {
 
     //DEBUG:
@@ -21,6 +23,11 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
     if (turn.is_valid(GM.area, hand)) {
         if (hand.size() <= 1) {
             std::cout << "Run out of cards\n";
+            //std::cout << "Cards Left: ";
+            //for (int i = 0; i < GM.get_num_players(); ++i) {
+            //    std::cout << GM.get_deck_size(i) + GM.get_hand_size(i) << ", ";
+            //}
+            //std::cout << "\n";
         }
         std::cout << "HAS LOST\n";
         return turn;
