@@ -48,10 +48,10 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
 
     auto fill_gap = find_best_adjacent(GM, hand);
 
+    assert(std::get<1>(middle_gap) != -1);//TODO implement
     std::cout << "middle position: " << std::get<1>(middle_gap) << " Card To Play: "
               << hand[std::get<2>(middle_gap)]->value << "\n";
 
-    assert(std::get<1>(middle_gap) != -1);//TODO implement
 
     turn.position_played = std::get<1>(middle_gap);
     turn.card_to_play = std::get<2>(middle_gap);
@@ -140,12 +140,15 @@ std::tuple<int, int, int> BinaryPartitionStrategy::find_best_middle_card_to_play
                     val_left = GM.area.get_area()[previous_played_pos]->value;
                 }
                 for (int j = 0; j < hand.size(); ++j) {
-
                     int best_pos = find_pos_for_card(hand[j]->value, previous_played_pos + 1, current_pos - 1, val_left,
                                                      val_right);
-                    int approx_value_required = (val_right - val_left) /
-                                                (current_pos - previous_played_pos) *
-                                                (best_pos - previous_played_pos);
+                    int val_diff = val_right - val_left;
+                    int pos_diff = current_pos - previous_played_pos;
+                    double value_per_step = ((double) val_diff) /
+                                            ((double) pos_diff);
+                    //??? 37/17=4e-310
+                    int approx_value_required = val_left + (int) (value_per_step *
+                                                                  (double) (best_pos - previous_played_pos));
                     int delta = std::abs(hand[j]->value - approx_value_required);
 
 
