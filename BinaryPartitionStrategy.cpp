@@ -57,7 +57,7 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
     std::cout << "Safe to discard: ";
     int num_safe_discards = 0;
     for (int i = 0; i < hand.size(); ++i) {
-        if (is_card_safe_to_discard(GM, hand[i]->value)) {
+        if (is_card_safe_to_discard(GM, i, hand)) {
             num_safe_discards++;
             std::cout << hand[i]->value << ", ";
         }
@@ -73,10 +73,11 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
         turn.card_to_play = std::get<2>(fill_gap);
         int num_to_discard = GM.area.get_num_discard(turn.position_played, hand[turn.card_to_play]->value);
         for (int i = 0; i < hand.size() && num_to_discard > 0; ++i) {
-            if (is_card_safe_to_discard(GM, hand[i]->value)) {
+            if (is_card_safe_to_discard(GM, i, hand)) {
                 assert(i != turn.card_to_play);
                 num_to_discard--;
                 turn.cards_to_discard.push_back(i);
+                discarded_values.push_back(hand[i]->value);
                 std::cout << hand[i]->value << ", ";
             }
         }
@@ -107,10 +108,11 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
         std::cout << "Discard 2: ";
         int num_to_discard = 2;
         for (int i = 0; i < hand.size() && num_to_discard > 0; ++i) {
-            if (is_card_safe_to_discard(GM, hand[i]->value)) {
+            if (is_card_safe_to_discard(GM, i, hand)) {
                 assert(i != turn.card_to_play);
                 num_to_discard--;
                 turn.cards_to_discard.push_back(i);
+                discarded_values.push_back(hand[i]->value);
                 std::cout << hand[i]->value << ", ";
             }
         }
@@ -280,9 +282,11 @@ BinaryPartitionStrategy::find_best_adjacent(const GameManager &GM, const std::ve
 
 }
 
-bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int card_value) {
+bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int position,
+                                                      const std::vector<std::unique_ptr<Card>> &hand) {
     // it is safe if:
 
+    int card_value = hand[position]->value;
     // start is not needed anymore
     if (card_value == Card::START) {
         return GM.area.has_start();
@@ -291,6 +295,7 @@ bool BinaryPartitionStrategy::is_card_safe_to_discard(const GameManager &GM, int
     //TODO finish?
     // is safe if we have multiple in hand or if we know we have a finish card left in draw:
     // if we havent discarded NUM_Finish/num_players yet
+    //TODO or if we have multiple Finish cards in hand
     if (card_value == Card::FINISH) {
         return false;
     }

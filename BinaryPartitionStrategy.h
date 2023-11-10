@@ -33,7 +33,15 @@ private:
     find_best_adjacent(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand);
 
 
-    bool is_card_safe_to_discard(const GameManager &GM, int card_value);
+    bool is_card_safe_to_discard(const GameManager &GM, int position, const std::vector<std::unique_ptr<Card>> &hand);
+
+    std::vector<int> discarded_values = {};
+
+    int get_num_finish_discarded() {
+        return std::accumulate(discarded_values.begin(), discarded_values.end(), 0, [](auto accu, auto v) {
+            return accu + (v == Card::FINISH);
+        });
+    }
 
     int discard_safety_margin = 1;
     int num_unsafe_turns = 0;// for statistics
