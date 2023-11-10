@@ -40,13 +40,15 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
     // END Check for lost, start, finish
 
     // idea find the position that is "as much middle as possible"
-    // if possible: fill in gap if a card is safe to discard
+    // if possible: fill in gaps if a card is safe to discard
 
     // when no "middle" gap exists anymore: play the cheapest card, discard 2 if it becomes too expansive
 
     auto middle_gap = find_best_middle_card_to_play(GM, hand);
 
-    std::cout << "middle position: " << std::get<1>(middle_gap) << "Card To Play:"
+    auto fill_gap = find_best_adjacent(GM, hand);
+
+    std::cout << "middle position: " << std::get<1>(middle_gap) << " Card To Play: "
               << hand[std::get<2>(middle_gap)]->value << "\n";
 
     assert(std::get<1>(middle_gap) != -1);//TODO implement
@@ -58,6 +60,7 @@ Turn BinaryPartitionStrategy::make_turn(const GameManager &GM, const std::vector
     // print before each turn to see what is happening
     GM.area.print();
     std::cout << "Confirm Turn ";
+
     std::cin.get();// wait for enter
     std::cout << "\n";
 
@@ -79,6 +82,7 @@ Turn BinaryPartitionStrategy::perform_discard(const GameManager &GM, const std::
     //TODO implement
     assert(false);
 }
+
 
 std::tuple<int, int, int> BinaryPartitionStrategy::find_best_middle_card_to_play(const GameManager &GM,
                                                                                  const std::vector<std::unique_ptr<Card>> &hand) {
@@ -118,7 +122,36 @@ std::tuple<int, int, int> BinaryPartitionStrategy::find_best_middle_card_to_play
         }
     }
 
+    std::cout << "Best Delta for middle Play: " << current_best_delta << "\n";
+
     return std::make_tuple(current_best_delta, current_best_pos, current_card_to_play);
 
+
+}
+
+
+std::tuple<int, int, int>
+BinaryPartitionStrategy::find_best_adjacent(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand) {
+
+
+    unsigned int current_best_pos = -1;
+    unsigned int current_card_to_play = -1;
+    unsigned int current_best_num_discard = std::numeric_limits<int>::max();
+
+    for (int i = 0; i < PlayArea::LENGTH; ++i) {
+        for (int j = 0; j < hand.size(); ++j) {
+            int new_num_discard = GM.area.get_num_discard(i, hand[j]->value);
+            if (new_num_discard > 0 && new_num_discard < current_best_num_discard) {
+                current_best_num_discard = new_num_discard;
+                current_card_to_play = j;
+                current_best_pos = i;
+            }
+        }
+
+    }
+
+
+    std::cout << "Best discard to adjacent: " << current_best_num_discard << "\n";
+    return std::make_tuple(current_best_num_discard, current_best_pos, current_card_to_play);
 
 }

@@ -28,6 +28,11 @@ private:
     std::tuple<int, int, int>
     find_best_middle_card_to_play(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand);
 
+    // return num_discard , pos to play card to play
+    std::tuple<int, int, int>
+    find_best_adjacent(const GameManager &GM, const std::vector<std::unique_ptr<Card>> &hand);
+
+
     // return delta, card
     inline std::pair<int, unsigned>
     find_best_card(const int target_value, const std::vector<std::unique_ptr<Card>> &hand) {
