@@ -47,6 +47,11 @@ public:
         return players.size();
     }
 
+    int get_num_finish_in_total_deck() {
+        //TODO refactroring: use same constant when creating the deck
+        return 5;
+    }
+
     template<class R>
     static bool RunNewGame(std::vector<std::unique_ptr<PlayerAgent>> strategies, R &rng);
 
